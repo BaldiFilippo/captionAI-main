@@ -1,10 +1,9 @@
-import Head from "next/head";
-import { NextPage } from "next";
+import Head from 'next/head'
+import { NextPage } from 'next'
 
-import Navbar from "../components/Navbar";
-import HeroSection from "../components/HeroSection";
-import Footer from "../components/Footer";
-
+import Navbar from '../components/Navbar'
+import HeroSection from '../components/HeroSection'
+import Footer from '../components/Footer'
 
 const Home: NextPage = () => {
   return (
@@ -21,11 +20,10 @@ const Home: NextPage = () => {
         <div className="flex max-w-6xl mx-auto flex-col items-center justify-center py-2 min-h-screen">
           <Navbar />
           <HeroSection />
-          <Footer />
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

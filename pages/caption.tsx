@@ -1,81 +1,81 @@
-import Head from "next/head";
-import Image from "next/image";
-import { NextPage } from "next";
+import Head from 'next/head'
+import Image from 'next/image'
+import { NextPage } from 'next'
 
-import React, { useState } from "react";
+import React, { useState } from 'react'
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from 'framer-motion'
 
-import { Uploader } from "uploader";
-import { UploadDropzone } from "react-uploader";
+import { Uploader } from 'uploader'
+import { UploadDropzone } from 'react-uploader'
 
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import LoadingDots from "../components/LoadingDots";
-import ResizablePanel from "../components/ResizablePanel";
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
+import LoadingDots from '../components/LoadingDots'
+import ResizablePanel from '../components/ResizablePanel'
 
-import NSFWPredictor from "../utils/nsfwCheck";
-import va from "@vercel/analytics";
+import NSFWPredictor from '../utils/nsfwCheck'
+import va from '@vercel/analytics'
 
-import { HiOutlineClipboardDocument } from "react-icons/hi2";
+import { HiOutlineClipboardDocument } from 'react-icons/hi2'
 
-React.useLayoutEffect = React.useEffect;
+React.useLayoutEffect = React.useEffect
 
 // Configuration for the uploader
 const uploader = Uploader({
   apiKey: !!process.env.NEXT_PUBLIC_UPLOAD_API_KEY
     ? process.env.NEXT_PUBLIC_UPLOAD_API_KEY
-    : "free",
-});
+    : 'free',
+})
 
 const options = {
   maxFileCount: 1,
-  mimeTypes: ["image/jpeg", "image/png", "image/jpg"],
+  mimeTypes: ['image/jpeg', 'image/png', 'image/jpg'],
   editor: { images: { crop: false } },
   styles: {
     colors: {
-      primary: "#5a5cd1", // Primary buttons & links
-      error: "#d23f4d", // Error messages
-      shade100: "#fff", // Standard text
-      shade200: "#fffe", // Secondary button text
-      shade300: "#fffd", // Secondary button text (hover)
-      shade400: "#fffc", // Welcome text
-      shade500: "#fff9", // Modal close button
-      shade600: "#fff7", // Border
-      shade700: "#fff2", // Progress indicator background
-      shade800: "#fff1", // File item background
-      shade900: "#ffff", // Various (draggable crop buttons, etc.)
+      primary: '#5a5cd1', // Primary buttons & links
+      error: '#d23f4d', // Error messages
+      shade100: '#fff', // Standard text
+      shade200: '#fffe', // Secondary button text
+      shade300: '#fffd', // Secondary button text (hover)
+      shade400: '#fffc', // Welcome text
+      shade500: '#fff9', // Modal close button
+      shade600: '#fff7', // Border
+      shade700: '#fff2', // Progress indicator background
+      shade800: '#fff1', // File item background
+      shade900: '#ffff', // Various (draggable crop buttons, etc.)
     },
   },
   onValidate: async (file: File): Promise<undefined | string> => {
-    let isSafe = false;
+    let isSafe = false
     try {
-      isSafe = await NSFWPredictor.isSafeImg(file);
-      if (!isSafe) va.track("NSFW Image blocked");
+      isSafe = await NSFWPredictor.isSafeImg(file)
+      if (!isSafe) va.track('NSFW Image blocked')
     } catch (error) {
-      console.error("NSFW predictor threw an error", error);
+      console.error('NSFW predictor threw an error', error)
     }
     return isSafe
       ? undefined
-      : "Detected a NSFW image which is not allowed. If this was a mistake, please contact me at hosna.qasmei@gmail.com";
+      : 'Detected a NSFW image which is not allowed. If this was a mistake, please contact me at hosna.qasmei@gmail.com'
   },
-};
+}
 
 const Home: NextPage = () => {
-  const [originalPhoto, setOriginalPhoto] = useState<string | null>(null);
-  const [caption, setCaption] = useState<string | null>(null);
-  const [buttonText, setButtonText] = useState("Copy");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [originalPhoto, setOriginalPhoto] = useState<string | null>(null)
+  const [caption, setCaption] = useState<string | null>(null)
+  const [buttonText, setButtonText] = useState('Copy')
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(caption!);
+    navigator.clipboard.writeText(caption!)
 
-    setButtonText("Copied!"); // set the button text to "Copied!" when text is copied
+    setButtonText('Copied!') // set the button text to "Copied!" when text is copied
     setTimeout(() => {
-      setButtonText("Copy"); // set the button text back to "Copy" after 2 seconds
-    }, 2000);
-  };
+      setButtonText('Copy') // set the button text back to "Copy" after 2 seconds
+    }, 2000)
+  }
 
   const UploadDropZone = () => (
     <UploadDropzone
@@ -83,34 +83,33 @@ const Home: NextPage = () => {
       options={options}
       onUpdate={(file) => {
         if (file.length !== 0) {
-          setOriginalPhoto(file[0].fileUrl.replace("raw", "thumbnail"));
-          generateCaption(file[0].fileUrl.replace("raw", "thumbnail"));
+          setOriginalPhoto(file[0].fileUrl.replace('raw', 'thumbnail'))
+          generateCaption(file[0].fileUrl.replace('raw', 'thumbnail'))
         }
       }}
       width="670px"
       height="250px"
     />
-  );
+  )
 
-  async function generateCaption( fileUrl: string )
-  {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setLoading(true);
-    const res = await fetch("/api/generate", {
-      method: "POST",
+  async function generateCaption(fileUrl: string) {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    setLoading(true)
+    const res = await fetch('/api/generate', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ imageUrl: fileUrl }),
-    });
+    })
 
-    let newCaption = await res.json();
+    let newCaption = await res.json()
     if (res.status !== 200) {
-      setError(newCaption);
+      setError(newCaption)
     } else {
-      setCaption(newCaption);
+      setCaption(newCaption)
     }
-    setLoading(false);
+    setLoading(false)
   }
 
   return (
@@ -164,7 +163,7 @@ const Home: NextPage = () => {
                         <textarea
                           className="w-full h-32 p-2 text-gray-700 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring"
                           placeholder="Enter text here..."
-                          value={caption.replace("Caption: ", "")}
+                          value={caption.replace('Caption: ', '')}
                         />
                         <button
                           className="px-4 py-2 text-white bg-[#5a5cd1] rounded-md hover:bg-[#3f4194]  focus:outline-none focus:ring"
@@ -200,9 +199,9 @@ const Home: NextPage = () => {
                     {originalPhoto && !loading && (
                       <button
                         onClick={() => {
-                          setOriginalPhoto(null);
-                          setCaption(null);
-                          setError(null);
+                          setOriginalPhoto(null)
+                          setCaption(null)
+                          setError(null)
                         }}
                         className="bg-white rounded-full text-black font-medium px-4 py-2 mt-8 hover:bg-white/80 transition"
                       >
@@ -214,11 +213,10 @@ const Home: NextPage = () => {
               </AnimatePresence>
             </ResizablePanel>
           </main>
-          <Footer />
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home
